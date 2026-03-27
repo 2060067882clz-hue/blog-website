@@ -13,7 +13,7 @@
 
         <ul class="showcase-points">
           <li>清晰的输入反馈与禁用状态</li>
-          <li>更现代的卡片层次和背景氛围</li>
+          <li>真实连接后端登录接口</li>
           <li>移动端也保持稳定的阅读体验</li>
         </ul>
       </aside>
@@ -22,7 +22,7 @@
         <div class="panel-header">
           <p class="panel-kicker">账号登录</p>
           <h2>开始进入你的工作台</h2>
-          <p class="panel-copy">输入用户名和密码后即可进入个人中心。</p>
+          <p class="panel-copy">输入后端账号和密码后即可进入个人中心。</p>
         </div>
 
         <div class="field-group">
@@ -49,6 +49,7 @@
           />
         </div>
 
+        <p class="helper-text">演示账号：admin / Admin123456</p>
         <p v-if="errorMessage" class="form-message">{{ errorMessage }}</p>
 
         <button class="submit-button" @click="login" :disabled="loading">
@@ -63,27 +64,36 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { loginRequest, saveAuth } from '../services/auth'
+
 const username = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const router = useRouter()
 
-const login = () => {
+const login = async () => {
   if (!username.value || !password.value) {
     errorMessage.value = '请输入用户名和密码'
     return
   }
 
-  errorMessage.value = ''
   loading.value = true
+  errorMessage.value = ''
 
-  window.setTimeout(() => {
-    localStorage.setItem('token', 'fake-token-123')
-    localStorage.setItem('nickname', username.value)
-    loading.value = false
+  try {
+    const data = await loginRequest({
+      username: username.value,
+      password: password.value,
+    })
+
+    saveAuth(data)
     router.push('/profile')
-  }, 500)
+  } catch (error) {
+    errorMessage.value = error.message || '登录失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -249,6 +259,12 @@ const login = () => {
   border-color: rgba(154, 107, 60, 0.52);
   box-shadow: 0 0 0 4px rgba(214, 158, 46, 0.14);
   transform: translateY(-1px);
+}
+
+.helper-text {
+  margin: 16px 0 0;
+  font-size: 0.92rem;
+  color: #7b8794;
 }
 
 .form-message {

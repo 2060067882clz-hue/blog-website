@@ -2,39 +2,86 @@
   <section class="profile-shell">
     <div class="profile-card">
       <p class="profile-kicker">Personal Center</p>
-      <h1>你好，{{ nickname }}</h1>
+      <h1 v-if="loading">正在读取你的信息...</h1>
+      <h1 v-else>你好，{{ displayName }}</h1>
       <p class="profile-copy">
-        你已经成功登录课程项目平台，现在可以继续浏览资料、维护个人信息，或者安全退出当前会话。
+        已经成功连接到后端认证服务。这里展示的是 `/auth/me` 返回的当前用户信息。
       </p>
 
-      <div class="profile-stats">
+      <p v-if="errorMessage" class="profile-error">{{ errorMessage }}</p>
+
+      <div v-if="user" class="profile-stats">
         <article>
           <span>登录状态</span>
           <strong>已连接</strong>
         </article>
         <article>
           <span>当前账号</span>
-          <strong>{{ nickname }}</strong>
+          <strong>{{ user.username }}</strong>
+        </article>
+        <article>
+          <span>显示名称</span>
+          <strong>{{ user.display_name }}</strong>
+        </article>
+        <article>
+          <span>角色</span>
+          <strong>{{ user.role }}</strong>
         </article>
       </div>
 
-      <button class="logout-button" @click="logout">退出登录</button>
+      <button class="logout-button" @click="logout" :disabled="submitting">
+        {{ submitting ? '退出中...' : '退出登录' }}
+      </button>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const nickname = ref(localStorage.getItem('nickname') || '用户')
-const router = useRouter()
+import { clearAuth, getCurrentUser, getStoredUser, logoutRequest, saveUser } from '../services/auth'
 
-const logout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('nickname')
-  router.push('/login')
+const router = useRouter()
+const user = ref(getStoredUser())
+const loading = ref(true)
+const submitting = ref(false)
+const errorMessage = ref('')
+
+const displayName = computed(() => user.value?.display_name || '用户')
+
+const loadProfile = async () => {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const data = await getCurrentUser()
+    user.value = data.user
+    saveUser(data.user)
+  } catch (error) {
+    errorMessage.value = error.message || '获取用户信息失败'
+    clearAuth()
+    router.push('/login')
+  } finally {
+    loading.value = false
+  }
 }
+
+const logout = async () => {
+  submitting.value = true
+
+  try {
+    await logoutRequest()
+  } catch (error) {
+    console.error(error)
+  } finally {
+    clearAuth()
+    submitting.value = false
+    router.push('/login')
+  }
+}
+
+onMounted(loadProfile)
 </script>
 
 <style scoped>
@@ -81,6 +128,14 @@ const logout = () => {
   font-size: 1rem;
 }
 
+.profile-error {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(186, 42, 42, 0.09);
+  color: #a61b1b;
+}
+
 .profile-stats {
   margin-top: 32px;
   display: grid;
@@ -120,12 +175,19 @@ const logout = () => {
   box-shadow: 0 18px 28px rgba(177, 65, 47, 0.24);
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
-.logout-button:hover {
+.logout-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 22px 30px rgba(177, 65, 47, 0.28);
+}
+
+.logout-button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 @media (max-width: 720px) {
