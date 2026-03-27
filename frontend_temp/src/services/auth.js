@@ -62,6 +62,13 @@ export function loginRequest(payload) {
   })
 }
 
+export function registerRequest(payload) {
+  return request('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
 export function getCurrentUser() {
   const token = getStoredToken()
 

@@ -20,7 +20,7 @@
           <strong>{{ user.username }}</strong>
         </article>
         <article>
-          <span>显示名称</span>
+          <span>昵称</span>
           <strong>{{ user.display_name }}</strong>
         </article>
         <article>
