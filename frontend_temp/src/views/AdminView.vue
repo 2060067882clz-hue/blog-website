@@ -74,7 +74,7 @@ onMounted(loadAdminData)
 <template>
   <section class="admin-hero">
     <div class="panel">
-      <span class="eyebrow">Admin Console</span>
+      <span class="eyebrow">管理控制台</span>
       <h1>全站巡检与内容治理</h1>
       <p>
         管理页面只使用后端已经实现的 4 个管理员接口：查看用户、查看文章、删除用户、删除文章。
@@ -92,7 +92,7 @@ onMounted(loadAdminData)
   <template v-else>
     <section class="section-head">
       <div>
-        <span class="eyebrow">Users</span>
+        <span class="eyebrow">用户列表</span>
         <h2>用户列表</h2>
       </div>
     </section>
@@ -132,7 +132,7 @@ onMounted(loadAdminData)
 
     <section class="section-head">
       <div>
-        <span class="eyebrow">Articles</span>
+        <span class="eyebrow">文章列表</span>
         <h2>全站文章</h2>
       </div>
     </section>

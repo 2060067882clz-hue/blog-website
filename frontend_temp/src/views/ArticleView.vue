@@ -26,6 +26,14 @@ const canManageArticle = computed(() => {
   return authState.user.role === 1 || authState.user.id === article.value.author.id
 })
 
+function goBack() {
+  if (window.history.length > 1) {
+    window.history.back()
+    return
+  }
+  router.push('/dashboard')
+}
+
 function canDeleteComment(comment) {
   if (!authState.user) {
     return false
@@ -121,31 +129,28 @@ watch(() => route.params.id, loadPage, { immediate: true })
 
   <template v-else>
     <article class="article-detail">
+      <button class="button button--plain article-detail__back" type="button" @click="goBack">返回</button>
+      <button
+        v-if="canManageArticle"
+        class="button button--danger article-detail__delete"
+        type="button"
+        :disabled="deleting"
+        @click="removeArticle"
+      >
+        {{ deleting ? '删除中...' : '删除文章' }}
+      </button>
       <div class="article-detail__head">
         <div>
-          <span class="eyebrow">Story</span>
+          <span class="eyebrow">文章详情</span>
           <h1>{{ article.title }}</h1>
         </div>
-        <div class="article-detail__tools">
-          <RouterLink class="button button--ghost" to="/dashboard">
-            返回工作台
-          </RouterLink>
-          <button
-            v-if="canManageArticle"
-            class="button button--danger"
-            type="button"
-            :disabled="deleting"
-            @click="removeArticle"
-          >
-            {{ deleting ? '删除中...' : '删除文章' }}
-          </button>
-        </div>
+        <div class="article-detail__tools"></div>
       </div>
 
       <div class="article-detail__meta">
         <span>作者：{{ article.author.nickname || article.author.username }}</span>
         <span>更新于：{{ formatDate(article.update_time) }}</span>
-        <span>评论：{{ commentCount }}</span>
+        <span>评论数：{{ commentCount }}</span>
       </div>
 
       <div class="article-detail__body">
@@ -156,7 +161,7 @@ watch(() => route.params.id, loadPage, { immediate: true })
     <section class="comment-board">
       <div class="section-head section-head--compact">
         <div>
-          <span class="eyebrow">Conversation</span>
+          <span class="eyebrow">评论区</span>
           <h2>评论区</h2>
         </div>
       </div>

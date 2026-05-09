@@ -2,10 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import { authState, hydrateAuth, isAdmin, isLoggedIn } from '../lib/auth'
 import AdminView from '../views/AdminView.vue'
+import CreateArticleView from '../views/CreateArticleView.vue'
 import ArticleView from '../views/ArticleView.vue'
 import AuthView from '../views/AuthView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import HomeView from '../views/HomeView.vue'
+import MyArticlesView from '../views/MyArticlesView.vue'
 
 const routes = [
   {
@@ -13,6 +15,12 @@ const routes = [
     name: 'home',
     component: HomeView,
     meta: { title: '博客首页' },
+  },
+  {
+    path: '/article/new',
+    name: 'article-create',
+    component: CreateArticleView,
+    meta: { title: '发布新文章', requiresAuth: true },
   },
   {
     path: '/article/:id',
@@ -39,6 +47,12 @@ const routes = [
     name: 'dashboard',
     component: DashboardView,
     meta: { title: '创作工作台', requiresAuth: true },
+  },
+  {
+    path: '/my-articles',
+    name: 'my-articles',
+    component: MyArticlesView,
+    meta: { title: '我的文章', requiresAuth: true },
   },
   {
     path: '/profile',

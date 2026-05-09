@@ -68,11 +68,11 @@ function fillDemoAccount(type) {
 
 function validateLogin() {
   if (!loginForm.username.trim()) {
-    return 'Please enter your username.'
+    return '请输入用户名。'
   }
 
   if (!loginForm.password.trim()) {
-    return 'Please enter your password.'
+    return '请输入密码。'
   }
 
   return ''
@@ -80,23 +80,23 @@ function validateLogin() {
 
 function validateRegister() {
   if (!registerForm.username.trim()) {
-    return 'Please enter a username.'
+    return '请输入用户名。'
   }
 
   if (!registerForm.email.trim()) {
-    return 'Please enter an email address.'
+    return '请输入邮箱地址。'
   }
 
   if (!registerForm.password.trim()) {
-    return 'Please create a password.'
+    return '请设置密码。'
   }
 
   if (!registerForm.confirmPassword.trim()) {
-    return 'Please confirm your password.'
+    return '请确认密码。'
   }
 
   if (registerForm.password !== registerForm.confirmPassword) {
-    return 'The two passwords do not match.'
+    return '两次输入的密码不一致。'
   }
 
   return ''
@@ -117,10 +117,10 @@ async function handleLogin() {
       password: loginForm.password,
     })
 
-    notify(response.message || 'Login successful.', 'success')
+    notify(response.message || '登录成功。', 'success')
     router.push(redirectTarget.value)
   } catch (error) {
-    formError.value = error.message || 'Login failed.'
+    formError.value = error.message || '登录失败。'
     notify(formError.value, 'danger')
   } finally {
     submitting.value = false
@@ -144,10 +144,10 @@ async function handleRegister() {
       password: registerForm.password,
     })
 
-    notify(response.message || 'Registration successful.', 'success')
+    notify(response.message || '注册成功。', 'success')
     router.push('/dashboard')
   } catch (error) {
-    formError.value = error.message || 'Registration failed.'
+    formError.value = error.message || '注册失败。'
     notify(formError.value, 'danger')
   } finally {
     submitting.value = false
@@ -158,50 +158,49 @@ async function handleRegister() {
 <template>
   <section class="auth-page">
     <div class="auth-page__intro">
-      <span class="eyebrow">Access Portal</span>
-      <h1>Complete sign in and sign up flow for the blog platform.</h1>
+      <span class="eyebrow">登录入口</span>
+      <h1>为博客平台提供完整的登录与注册流程。</h1>
       <p>
-        This screen is now aligned with the backend auth API: login, register,
-        automatic session persistence, and redirect back to protected pages.
+        这个页面已对接后端认证接口：登录、注册、自动保持会话，并可跳回受保护页面。
       </p>
 
       <div class="auth-highlights">
         <article class="auth-highlight">
-          <strong>Login</strong>
-          <p>Username and password map directly to `POST /api/v1/auth/login`.</p>
+          <strong>登录</strong>
+          <p>用户名和密码直接对应 `POST /api/v1/auth/login`。</p>
         </article>
         <article class="auth-highlight">
-          <strong>Register</strong>
-          <p>Username, email, nickname, and password map to the backend register API.</p>
+          <strong>注册</strong>
+          <p>用户名、邮箱、昵称和密码对应后端注册接口。</p>
         </article>
         <article class="auth-highlight">
-          <strong>Roles</strong>
-          <p>After login, regular users and admins are redirected to the right workspace.</p>
+          <strong>权限</strong>
+          <p>登录后，普通用户和管理员会自动跳转到对应工作区。</p>
         </article>
       </div>
 
       <div class="auth-demo">
         <div>
-          <span class="eyebrow">Demo Account</span>
-          <h2>Quick fill for testing</h2>
+          <span class="eyebrow">演示账号</span>
+          <h2>一键填充用于测试</h2>
         </div>
 
         <div class="auth-demo__buttons">
           <button class="button" type="button" @click="fillDemoAccount('admin')">
-            Fill Admin Account
+            填充管理员账号
           </button>
           <button class="button button--ghost" type="button" @click="fillDemoAccount('tester')">
-            Fill Test User
+            填充测试用户
           </button>
         </div>
 
         <div class="auth-demo__list">
           <div class="auth-demo__item">
-            <span>Admin</span>
+            <span>管理员</span>
             <strong>admin / Admin123456</strong>
           </div>
           <div class="auth-demo__item">
-            <span>Test User</span>
+            <span>测试用户</span>
             <strong>tester01 / Tester123</strong>
           </div>
         </div>
@@ -215,46 +214,46 @@ async function handleRegister() {
           :class="{ active: mode === 'login' }"
           @click="switchMode('login')"
         >
-          Sign In
+          登录
         </button>
         <button
           type="button"
           :class="{ active: mode === 'register' }"
           @click="switchMode('register')"
         >
-          Create Account
+          注册
         </button>
       </div>
 
       <p class="auth-caption">
         {{
           mode === 'login'
-            ? 'Use an existing account to comment, publish articles, and access your dashboard.'
-            : 'Create a new account and the backend will automatically sign you in after registration.'
+            ? '使用已有账号发表评论、发布文章并进入工作台。'
+            : '创建新账号后，后端会自动让你登录。'
         }}
       </p>
 
       <form v-if="mode === 'login'" class="auth-form" @submit.prevent="handleLogin">
         <label class="auth-field">
-          <span>Username</span>
+          <span>用户名</span>
           <input
             v-model="loginForm.username"
             autocomplete="username"
             maxlength="32"
-            placeholder="Enter your username"
+            placeholder="请输入用户名"
             required
           />
         </label>
 
         <label class="auth-field">
-          <span>Password</span>
+          <span>密码</span>
           <div class="auth-password">
             <input
               v-model="loginForm.password"
               :type="loginPasswordVisible ? 'text' : 'password'"
               autocomplete="current-password"
               maxlength="128"
-              placeholder="Enter your password"
+              placeholder="请输入密码"
               required
             />
             <button
@@ -262,7 +261,7 @@ async function handleRegister() {
               type="button"
               @click="loginPasswordVisible = !loginPasswordVisible"
             >
-              {{ loginPasswordVisible ? 'Hide' : 'Show' }}
+              {{ loginPasswordVisible ? '隐藏' : '显示' }}
             </button>
           </div>
         </label>
@@ -272,36 +271,36 @@ async function handleRegister() {
         </div>
 
         <button class="button auth-submit" type="submit" :disabled="submitting">
-          {{ submitting ? 'Signing In...' : 'Sign In to Dashboard' }}
+          {{ submitting ? '登录中...' : '登录并进入工作台' }}
         </button>
       </form>
 
       <form v-else class="auth-form" @submit.prevent="handleRegister">
         <div class="auth-form__split">
           <label class="auth-field">
-            <span>Username</span>
+            <span>用户名</span>
             <input
               v-model="registerForm.username"
               autocomplete="username"
               maxlength="32"
-              placeholder="Choose a username"
+              placeholder="请输入用户名"
               required
             />
           </label>
 
           <label class="auth-field">
-            <span>Nickname</span>
+            <span>昵称</span>
             <input
               v-model="registerForm.nickname"
               autocomplete="nickname"
               maxlength="32"
-              placeholder="Optional display name"
+              placeholder="可选填写昵称"
             />
           </label>
         </div>
 
         <label class="auth-field">
-          <span>Email</span>
+          <span>邮箱</span>
           <input
             v-model="registerForm.email"
             type="email"
@@ -313,14 +312,14 @@ async function handleRegister() {
 
         <div class="auth-form__split">
           <label class="auth-field">
-            <span>Password</span>
+            <span>密码</span>
             <div class="auth-password">
               <input
                 v-model="registerForm.password"
                 :type="registerPasswordVisible ? 'text' : 'password'"
                 autocomplete="new-password"
                 maxlength="128"
-                placeholder="At least 6 characters"
+                placeholder="至少 6 个字符"
                 required
               />
               <button
@@ -328,20 +327,20 @@ async function handleRegister() {
                 type="button"
                 @click="registerPasswordVisible = !registerPasswordVisible"
               >
-                {{ registerPasswordVisible ? 'Hide' : 'Show' }}
+                {{ registerPasswordVisible ? '隐藏' : '显示' }}
               </button>
             </div>
           </label>
 
           <label class="auth-field">
-            <span>Confirm Password</span>
+            <span>确认密码</span>
             <div class="auth-password">
               <input
                 v-model="registerForm.confirmPassword"
                 :type="registerConfirmVisible ? 'text' : 'password'"
                 autocomplete="new-password"
                 maxlength="128"
-                placeholder="Repeat the password"
+                placeholder="再次输入密码"
                 required
               />
               <button
@@ -349,14 +348,14 @@ async function handleRegister() {
                 type="button"
                 @click="registerConfirmVisible = !registerConfirmVisible"
               >
-                {{ registerConfirmVisible ? 'Hide' : 'Show' }}
+                {{ registerConfirmVisible ? '隐藏' : '显示' }}
               </button>
             </div>
           </label>
         </div>
 
         <p class="auth-tip">
-          Username: 3-32 chars. Password: 6-128 chars. Nickname is optional.
+          用户名：3-32 个字符。密码：6-128 个字符。昵称可选。
         </p>
 
         <div v-if="formError" class="auth-error">
@@ -364,7 +363,7 @@ async function handleRegister() {
         </div>
 
         <button class="button auth-submit" type="submit" :disabled="registerButtonDisabled">
-          {{ submitting ? 'Creating Account...' : 'Register and Sign In' }}
+          {{ submitting ? '注册中...' : '注册并登录' }}
         </button>
       </form>
     </div>

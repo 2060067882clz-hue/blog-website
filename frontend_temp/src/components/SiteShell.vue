@@ -44,8 +44,7 @@ async function handleLogout() {
       </RouterLink>
 
       <nav class="topbar__nav">
-        <RouterLink to="/">首页</RouterLink>
-        <RouterLink v-if="isLoggedIn" to="/dashboard">工作台</RouterLink>
+        <RouterLink to="/" class="button button--ghost">首页</RouterLink>
         <RouterLink v-if="isAdmin" to="/admin">管理台</RouterLink>
         <RouterLink :to="primaryAction.to" class="button button--ghost">
           {{ primaryAction.label }}

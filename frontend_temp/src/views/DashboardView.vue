@@ -5,8 +5,8 @@ import { RouterLink, useRoute } from 'vue-router'
 import ArticleCard from '../components/ArticleCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { apiRequest } from '../lib/api'
-import { authState, isAdmin } from '../lib/auth'
-import { formatDate, sortByDate } from '../lib/format'
+import { authState, isAdmin, hydrateAuth } from '../lib/auth'
+import { sortByDate, formatDate } from '../lib/format'
 import { notify } from '../lib/notify'
 
 const route = useRoute()
@@ -24,6 +24,9 @@ const form = ref({
 const sortedArticles = computed(() => sortByDate(articles.value))
 const articleCount = computed(() => articles.value.length)
 const draftLabel = computed(() => (editingId.value ? '更新文章' : '发布文章'))
+const currentUser = computed(() => authState.user || {})
+const displayName = computed(() => currentUser.value.nickname || currentUser.value.username || '')
+const avatarInitial = computed(() => (displayName.value || '?').charAt(0).toUpperCase())
 
 function resetForm() {
   editingId.value = null
@@ -113,109 +116,182 @@ async function removeArticle(articleId) {
   }
 }
 
-onMounted(loadMyArticles)
+onMounted(async () => {
+  await hydrateAuth()
+  await loadMyArticles()
+})
+
+// change password modal state
+const showChangePassword = ref(false)
+const changeSaving = ref(false)
+const changeForm = ref({
+  current_password: '',
+  new_password: '',
+  confirm_password: '',
+})
+const changeError = ref('')
+
+function openChangePassword() {
+  changeForm.value.current_password = ''
+  changeForm.value.new_password = ''
+  changeForm.value.confirm_password = ''
+  changeError.value = ''
+  showChangePassword.value = true
+}
+
+function closeChangePassword() {
+  showChangePassword.value = false
+}
+
+async function submitChangePassword() {
+  if (!changeForm.value.current_password) {
+    notify('请填写当前密码', 'warning')
+    return
+  }
+  if (!changeForm.value.new_password) {
+    changeError.value = '请输入新的密码'
+    return
+  }
+  if (changeForm.value.new_password !== changeForm.value.confirm_password) {
+    notify('两次输入的新密码不一致', 'warning')
+    return
+  }
+
+  changeSaving.value = true
+  try {
+    // try common endpoint; backend may need adjustment if different
+    const resp = await apiRequest('/auth/change-password', {
+      method: 'POST',
+      body: {
+        current_password: changeForm.value.current_password,
+        new_password: changeForm.value.new_password,
+      },
+    })
+    notify(resp.message || '密码修改成功，请重新登录', 'success')
+    closeChangePassword()
+  } catch (err) {
+    // Map common failure cases to user-friendly messages shown in modal top-right
+    const payload = err?.payload || {}
+    let errMsg = '密码修改失败'
+
+    // prefer server-provided message when meaningful
+    const serverMsg = payload?.message || payload?.error?.message || err?.message
+
+    // If backend returned 404 (common in some backends for 'not found' current password), treat as current password wrong
+    if (err?.status === 404 || String(serverMsg).includes('404')) {
+      errMsg = '当前密码错误'
+    } else if (serverMsg) {
+      const s = String(serverMsg).toLowerCase()
+      if (s.includes('current') || s.includes('当前') || s.includes('incorrect') || s.includes('password') || s.includes('密码')) {
+        // likely indicates current password incorrect
+        errMsg = '当前密码不正确'
+      } else {
+        errMsg = String(serverMsg)
+      }
+    } else if (err?.status === 401) {
+      errMsg = '当前密码不正确或会话已过期'
+    } else if (err?.status === 422 || err?.status === 400) {
+      if (payload?.errors) {
+        errMsg = Object.values(payload.errors).flat().join('；')
+      } else {
+        errMsg = payload?.message || '参数校验失败'
+      }
+    } else if (err?.status >= 500) {
+      errMsg = '服务器错误，请稍后重试'
+    }
+
+    changeError.value = errMsg
+    notify(serverMsg || '密码修改失败', 'danger')
+  } finally {
+    changeSaving.value = false
+  }
+}
 </script>
 
 <template>
   <section class="dashboard-hero">
     <div class="panel dashboard-profile">
-      <span class="eyebrow">Workspace</span>
-      <h1>{{ authState.user.nickname || authState.user.username }} 的创作工作台</h1>
-      <p>
-        使用后端现有的发文、改文、删文和“我的文章”接口，整理成一个更适合日常操作的内容后台。
-      </p>
-      <div class="dashboard-profile__meta">
-        <span>角色：{{ isAdmin ? '管理员' : '普通用户' }}</span>
-        <span>邮箱：{{ authState.user.email }}</span>
-        <span>注册时间：{{ formatDate(authState.user.create_time) }}</span>
-      </div>
+      <span class="eyebrow">创作工作台</span>
+      <h1>{{ displayName }} 的创作工作台</h1>
+      
+      
       <div class="dashboard-profile__actions">
-        <button class="button button--ghost" type="button" @click="resetForm">
+        <RouterLink class="button button--ghost" to="/article/new">
           新建一篇文章
-        </button>
+        </RouterLink>
+        <RouterLink class="button button--ghost" to="/my-articles">我的文章</RouterLink>
         <RouterLink v-if="isAdmin" class="button" to="/admin">
           进入管理台
         </RouterLink>
       </div>
     </div>
 
-    <form class="panel editor-panel" @submit.prevent="submitArticle">
-      <div class="section-head section-head--compact">
-        <div>
-          <span class="eyebrow">Editor</span>
-          <h2>{{ editingId ? '编辑文章' : '发布新文章' }}</h2>
+    <aside class="panel profile-sidebar">
+      <div class="profile-card">
+          <div class="profile-badge">
+            <span class="eyebrow">个人中心</span>
+            <button class="button button--ghost button--profile-right" @click="openChangePassword">修改密码</button>
+          </div>
+        <div class="profile-head">
+          <div class="avatar">{{ avatarInitial }}</div>
+          <div class="identity">
+            <span class="identity__name">用户名：{{ displayName }}</span>
+            <span class="identity__name">ID：{{ currentUser.id || '--' }}</span>
+          </div>
         </div>
-        <button
-          v-if="editingId"
-          class="button button--plain"
-          type="button"
-          @click="resetForm"
-        >
-          取消编辑
-        </button>
+
+        <div class="profile-stats">
+          <div class="stat-item">
+            <span class="eyebrow">邮箱</span>
+            <strong>{{ currentUser.email || '--' }}</strong>
+          </div>
+          <div class="stat-item">
+            <span class="eyebrow">文章数</span>
+            <strong>{{ articleCount }}</strong>
+          </div>
+          <div class="stat-item">
+            <span class="eyebrow">账号类型</span>
+            <strong>{{ isAdmin ? '管理员' : '普通用户' }}</strong>
+          </div>
+          <div class="stat-item">
+            <span class="eyebrow">注册日期</span>
+            <strong>{{ formatDate(currentUser.create_time || currentUser.created_at || currentUser.createdAt || currentUser.registered_at || currentUser.registeredAt || currentUser.created) }}</strong>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+        </div>
       </div>
-
-      <label class="field">
-        <span>标题</span>
-        <input
-          v-model="form.title"
-          maxlength="120"
-          placeholder="写一个清晰、有辨识度的标题"
-        />
-      </label>
-
-      <label class="field">
-        <span>正文</span>
-        <textarea
-          v-model="form.content"
-          rows="12"
-          placeholder="这里直接对应后端文章正文 content 字段"
-        />
-      </label>
-
-      <div class="editor-panel__footer">
-        <span>{{ form.content.length }} 字</span>
-        <button class="button" type="submit" :disabled="saving">
-          {{ saving ? '保存中...' : draftLabel }}
-        </button>
+    </aside>
+    <!-- Change Password Modal -->
+    <div v-if="showChangePassword" class="modal-backdrop" @click.self="closeChangePassword">
+      <div class="modal-box" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <h3>修改密码</h3>
+        </div>
+        <div v-if="changeError" class="modal-error">{{ changeError }}</div>
+        <div class="modal-body">
+          <div class="field">
+            <label>当前密码</label>
+            <input type="password" v-model="changeForm.current_password" placeholder="输入当前密码" />
+          </div>
+          <div class="field">
+            <label>新密码</label>
+            <input type="password" v-model="changeForm.new_password" placeholder="输入新密码" @input="changeError = ''" />
+          </div>
+          <div class="field">
+            <label>确认新密码</label>
+            <input type="password" v-model="changeForm.confirm_password" placeholder="再次输入新密码" @input="changeError = ''" />
+          </div>
+          <div style="margin-top:16px;text-align:right;">
+            <button class="button button--ghost" @click="closeChangePassword">取消</button>
+            <button class="button" :disabled="changeSaving" style="margin-left:8px;" @click="submitChangePassword">{{ changeSaving ? '保存中…' : '保存' }}</button>
+          </div>
+        </div>
       </div>
-    </form>
+    </div>
   </section>
 
-  <section class="section-head">
-    <div>
-      <span class="eyebrow">My Articles</span>
-      <h2>我的文章</h2>
-    </div>
-    <div class="badge-row">
-      <span class="badge">{{ articleCount }} 篇内容</span>
-      <span class="badge">接口：`GET /articles/me`</span>
-    </div>
-  </section>
 
-  <section v-if="loading" class="panel panel--soft">正在加载你的文章...</section>
-
-  <div v-else-if="sortedArticles.length" class="article-grid">
-    <ArticleCard v-for="article in sortedArticles" :key="article.id" :article="article">
-      <template #actions>
-        <button class="button button--plain" type="button" @click="startEditing(article)">
-          编辑
-        </button>
-        <button
-          class="button button--danger"
-          type="button"
-          :disabled="deletingId === article.id"
-          @click="removeArticle(article.id)"
-        >
-          {{ deletingId === article.id ? '删除中...' : '删除' }}
-        </button>
-      </template>
-    </ArticleCard>
-  </div>
-
-  <EmptyState
-    v-else
-    title="你还没有发布任何文章"
-    description="上面的编辑器已经准备好了，写完就可以直接调用后端发布接口。"
-  />
+  <!-- 已移除底部“我的文章”板块；保留顶部创作工作台信息 -->
 </template>

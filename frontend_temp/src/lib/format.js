@@ -3,13 +3,23 @@ export function formatDate(value) {
     return '--'
   }
 
+  // normalize common timestamp formats: numeric seconds -> ms
+  let ts = value
+  if (typeof ts === 'number') {
+    if (ts > 0 && ts < 1e12) ts = ts * 1000
+  } else if (/^\d+$/.test(String(ts))) {
+    const n = Number(ts)
+    if (n > 0 && n < 1e12) ts = n * 1000
+    else ts = n
+  }
+
   return new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(value))
+  }).format(new Date(ts))
 }
 
 export function getExcerpt(content, length = 140) {

@@ -26,7 +26,9 @@ const excerpt = computed(() => getExcerpt(props.article.content, 150))
       <RouterLink class="button button--plain" :to="`/article/${props.article.id}`">
         阅读全文
       </RouterLink>
-      <slot name="actions" />
+      <div class="article-card__actions">
+        <slot name="actions" />
+      </div>
     </div>
   </article>
 </template>
