@@ -68,6 +68,7 @@ cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
+
 默认配置里 `DB_BACKEND=memory`，无需改数据库参数即可直接启动。
 
 ### 方式二：MySQL 模式
