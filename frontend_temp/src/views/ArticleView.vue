@@ -141,7 +141,7 @@ watch(() => route.params.id, loadPage, { immediate: true })
       </button>
       <div class="article-detail__head">
         <div>
-          <span class="eyebrow">文章详情</span>
+          <span class="eyebrow"> </span>
           <h1>{{ article.title }}</h1>
         </div>
         <div class="article-detail__tools"></div>

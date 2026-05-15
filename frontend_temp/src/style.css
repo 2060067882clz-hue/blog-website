@@ -798,16 +798,27 @@ h3 {
 
 .article-detail {
   position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "back head delete"
+    "meta meta meta"
+    "body body body";
+  align-items: start;
+  gap: 18px 14px;
+}
+
+.article-detail__head {
+  grid-area: head;
+  min-width: 0;
 }
 
 .article-detail__back {
-  position: absolute;
-  top: 14px;
-  left: 14px;
+  grid-area: back;
+  justify-self: start;
   min-height: 40px;
   padding: 8px 14px;
   border-radius: 10px;
-  z-index: 2;
 }
 
 .article-detail__back:hover,
@@ -819,17 +830,19 @@ h3 {
 }
 
 .article-detail__delete {
-  position: fixed;
-  top: 14px;
-  left: 88px;
-  right: auto;
-  z-index: 2;
+  grid-area: delete;
+  justify-self: end;
   min-height: 40px;
   padding: 8px 14px;
   border-radius: 10px;
 }
-  gap: 24px;
-  align-items: stretch;
+
+.article-detail__meta {
+  grid-area: meta;
+}
+
+.article-detail__body {
+  grid-area: body;
 }
 
 .auth-page__intro,
@@ -1382,6 +1395,21 @@ h3 {
 
   .section-head {
     align-items: start;
+  }
+
+  .article-detail {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "back"
+      "delete"
+      "head"
+      "meta"
+      "body";
+  }
+
+  .article-detail__back,
+  .article-detail__delete {
+    justify-self: stretch;
   }
 
   .auth-demo__list,
