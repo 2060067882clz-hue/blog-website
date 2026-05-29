@@ -40,9 +40,9 @@ onMounted(loadArticles)
   <section class="hero-panel">
     <div class="hero-panel__content">
       <span class="eyebrow">博客体验</span>
-      <h1>把后端已经实现的博客能力，变成一套完整且精致的前端界面。</h1>
+      <h1>在这里记录灵感、分享故事，让你的文字被更多人看见。</h1>
       <p>
-        页面严格对应现有接口：游客可浏览文章，登录后可评论与创作，管理员可进入管理台巡检用户和内容。
+        浏览精选文章，遇见同频的人。登录后就能发布、评论与收藏，把日常写成可回味的篇章。
       </p>
       <div class="hero-panel__actions">
         <RouterLink class="button" :to="isLoggedIn ? '/dashboard' : '/auth'">

@@ -158,24 +158,24 @@ async function handleRegister() {
 <template>
   <section class="auth-page">
     <div class="auth-page__intro">
-      <span class="eyebrow">登录入口</span>
-      <h1>为博客平台提供完整的登录与注册流程。</h1>
+      <span class="eyebrow">欢迎回来</span>
+      <h1>登录后就能开始写作、评论与收藏喜欢的文章。</h1>
       <p>
-        这个页面已对接后端认证接口：登录、注册、自动保持会话，并可跳回受保护页面。
+        不用复杂设置，几步就能进入你的创作空间。还没有账号？现在注册也很快。
       </p>
 
       <div class="auth-highlights">
         <article class="auth-highlight">
-          <strong>登录</strong>
-          <p>用户名和密码直接对应 `POST /api/v1/auth/login`。</p>
+          <strong>快速登录</strong>
+          <p>输入账号密码，马上进入个人工作台。</p>
         </article>
         <article class="auth-highlight">
-          <strong>注册</strong>
-          <p>用户名、邮箱、昵称和密码对应后端注册接口。</p>
+          <strong>轻松注册</strong>
+          <p>创建账号后即可开始发布和互动。</p>
         </article>
         <article class="auth-highlight">
-          <strong>权限</strong>
-          <p>登录后，普通用户和管理员会自动跳转到对应工作区。</p>
+          <strong>专属空间</strong>
+          <p>登录后会带你回到最适合的页面。</p>
         </article>
       </div>
 
