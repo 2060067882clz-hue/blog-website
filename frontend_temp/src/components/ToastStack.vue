@@ -27,6 +27,7 @@ import { toasts, dismissToast } from '../lib/notify'
   flex-direction: column;
   gap: 10px;
   z-index: 9999;
+  pointer-events: none;
 }
 
 .toast {
@@ -38,6 +39,7 @@ import { toasts, dismissToast } from '../lib/notify'
   align-items: center;
   gap: 10px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  pointer-events: auto;
 }
 
 .toast--success {
